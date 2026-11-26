@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>WYY的 ✦ 小岛 · 3D 个人主页</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%84%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+SC:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   设计变量 · 深邃极光夜空蓝 + 冰霜白衬线
+   ============================================================ */
+:root{
+  --bg-1:#040a18;
+  --bg-2:#0a1a33;
+  --bg-3:#123056;
+  --ink:#eef5fd;
+  --muted:#93a8c2;
+  --faint:#6b81a0;
+  --ice:#9fd8ec;
+  --warm:#ffd9a0;
+  --line:rgba(180,210,240,.16);
+  --glass:rgba(11,25,47,.55);
+  --glass-strong:rgba(9,20,40,.78);
+  --serif:'Cormorant Garamond','Noto Serif SC',serif;
+  --sans:'Inter','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-1);}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  /* 极光夜空渐变：右上青绿色微弱极光 */
+  background:
+    radial-gradient(1100px 700px at 88% -10%, rgba(88,214,196,.14), transparent 60%),
+    radial-gradient(900px 600px at 110% 8%, rgba(120,160,255,.10), transparent 55%),
+    linear-gradient(160deg, var(--bg-3) 0%, var(--bg-2) 42%, var(--bg-1) 100%);
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+a{color:inherit;text-decoration:none;}
+img{display:block;}
+#scene-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+
+/* ============================================================
+   顶部导航
+   ============================================================ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:26px 5vw;pointer-events:none;
+}
+.nav > *{pointer-events:auto;}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-logo{
+  width:42px;height:42px;border-radius:50%;
+  border:1px solid var(--line);
+  display:grid;place-items:center;
+  font-family:var(--serif);font-size:20px;color:var(--ice);
+  background:rgba(159,216,236,.08);
+  letter-spacing:.02em;
+}
+.brand-text .name{font-family:var(--serif);font-size:19px;letter-spacing:.14em;font-weight:600;}
+.brand-text .sub{font-size:9.5px;letter-spacing:.32em;color:var(--faint);margin-top:3px;}
+.nav-links{display:flex;align-items:center;gap:30px;}
+.nav-links .link{
+  font-size:13px;letter-spacing:.18em;color:var(--muted);
+  transition:color .3s;position:relative;padding:4px 0;
+}
+.nav-links .link::after{
+  content:'';position:absolute;left:0;bottom:0;width:0;height:1px;
+  background:var(--ice);transition:width .35s ease;
+}
+.nav-links .link:hover{color:var(--ink);}
+.nav-links .link:hover::after{width:100%;}
+.pill-btn{
+  border:1px solid var(--line);border-radius:999px;
+  padding:10px 22px;font-size:12.5px;letter-spacing:.16em;white-space:nowrap;
+  color:var(--ink);background:rgba(159,216,236,.07);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:all .35s;display:inline-flex;align-items:center;gap:8px;
+}
+.pill-btn:hover{background:rgba(159,216,236,.18);border-color:rgba(159,216,236,.5);transform:translateY(-1px);}
+
+/* ============================================================
+   首屏左侧杂志文案
+   ============================================================ */
+.landing-panel{
+  position:fixed;z-index:20;
+  left:7vw;top:52%;transform:translateY(-50%);
+  width:min(42vw,540px);
+  transition:opacity .75s ease, transform .75s ease;
+}
+.landing-panel.is-hidden{opacity:0;transform:translate(calc(-50% - 40px),-50%);pointer-events:none;}
+.kicker{
+  display:flex;align-items:center;gap:14px;
+  font-size:11px;letter-spacing:.34em;color:var(--ice);
+  margin-bottom:26px;font-weight:500;
+}
+.kicker::before{content:'';width:46px;height:1px;background:var(--ice);opacity:.7;}
+.hero-title{
+  font-family:var(--serif);
+  font-size:clamp(40px,5.2vw,68px);
+  line-height:1.18;font-weight:600;letter-spacing:.02em;
+  text-shadow:0 6px 40px rgba(4,12,28,.6);
+}
+.hero-title .star{color:var(--ice);font-size:.72em;vertical-align:.12em;margin:0 .08em;}
+.hero-intro{margin-top:26px;color:var(--muted);font-size:14.5px;line-height:2;letter-spacing:.06em;}
+.hero-intro p+p{margin-top:6px;}
+.cta-primary{
+  margin-top:38px;white-space:nowrap;flex:none;
+  display:inline-flex;align-items:center;gap:12px;
+  padding:16px 34px;border-radius:999px;
+  font-size:14px;letter-spacing:.22em;font-weight:500;
+  color:#061224;
+  background:linear-gradient(120deg,#eaf6ff 0%,#b9e2f2 55%,#8fcbe4 100%);
+  box-shadow:0 12px 40px rgba(140,200,230,.28), inset 0 1px 0 rgba(255,255,255,.7);
+  transition:transform .35s, box-shadow .35s;
+}
+.cta-primary:hover{transform:translateY(-2px);box-shadow:0 18px 50px rgba(140,200,230,.42), inset 0 1px 0 rgba(255,255,255,.7);}
+.identity-tag{
+  margin-top:42px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:11.5px;letter-spacing:.14em;color:var(--faint);line-height:1.9;
+}
+
+/* ============================================================
+   底部信息栏
+   ============================================================ */
+.bottom-bar{
+  position:fixed;left:0;right:0;bottom:26px;z-index:22;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:0 5vw;gap:20px;
+  transition:opacity .6s ease;
+}
+.bottom-bar.is-hidden{opacity:0;pointer-events:none;}
+.slogan{
+  position:fixed;left:2.2vw;bottom:88px;
+  font-size:10px;letter-spacing:.3em;color:var(--faint);
+  writing-mode:vertical-rl;line-height:1.9;
+}
+.landmark-pill{
+  display:flex;align-items:center;gap:4px;
+  background:var(--glass);
+  border:1px solid var(--line);border-radius:999px;
+  padding:8px 10px;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 10px 40px rgba(2,8,20,.45);
+  max-width:80vw;overflow-x:auto;scrollbar-width:none;
+}
+.landmark-pill::-webkit-scrollbar{display:none;}
+.landmark-pill button{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:999px;white-space:nowrap;
+  font-size:12px;letter-spacing:.1em;color:var(--muted);
+  transition:all .3s;
+}
+.landmark-pill button .no{font-family:var(--serif);font-size:13px;color:var(--ice);letter-spacing:.05em;}
+.landmark-pill button:hover{color:var(--ink);background:rgba(159,216,236,.12);}
+.operate-hint{position:fixed;right:5vw;bottom:88px;font-size:10.5px;letter-spacing:.16em;color:var(--faint);text-align:right;line-height:2;}
+
+/* ============================================================
+   探索模式：返回按钮 / 功能开关
+   ============================================================ */
+.back-btn{
+  position:fixed;top:26px;left:5vw;z-index:32;
+  opacity:0;transform:translateY(-14px);pointer-events:none;
+  transition:all .6s cubic-bezier(.22,1,.36,1);
+}
+.back-btn.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+.view-tools{
+  position:fixed;right:5vw;bottom:26px;z-index:32;
+  display:flex;flex-direction:column;gap:10px;align-items:flex-end;
+  opacity:0;transform:translateY(14px);pointer-events:none;
+  transition:all .6s cubic-bezier(.22,1,.36,1);
+}
+.view-tools.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+.tool-chip{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 18px;border-radius:999px;
+  background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  font-size:12px;letter-spacing:.14em;color:var(--muted);
+  transition:all .3s;
+}
+.tool-chip:hover{color:var(--ink);border-color:rgba(159,216,236,.45);}
+.tool-chip .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--ice);box-shadow:0 0 10px var(--ice);
+  transition:all .3s;
+}
+.tool-chip.off .dot{background:var(--faint);box-shadow:none;}
+
+/* ============================================================
+   3D 热点 HTML 标签
+   ============================================================ */
+.hotspot-label{
+  position:fixed;z-index:18;transform:translate(-50%,-130%);
+  display:flex;align-items:center;gap:9px;
+  padding:9px 16px 9px 10px;border-radius:999px;
+  background:var(--glass);border:1px solid rgba(159,216,236,.35);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 30px rgba(2,10,26,.5);
+  font-size:12.5px;letter-spacing:.12em;white-space:nowrap;
+  opacity:0;transition:opacity .4s ease;pointer-events:none;
+}
+.hotspot-label.show{opacity:1;}
+.hotspot-label .badge{
+  width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--serif);font-size:13px;font-weight:600;
+  color:#061224;background:linear-gradient(135deg,#eaf6ff,#9fd8ec);
+}
+/* 悬停小岛提示气泡 */
+.island-tip{
+  position:fixed;z-index:24;pointer-events:none;
+  padding:10px 18px;border-radius:999px;
+  background:var(--glass-strong);border:1px solid rgba(159,216,236,.4);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  font-size:12px;letter-spacing:.18em;color:var(--ink);
+  box-shadow:0 10px 34px rgba(2,10,26,.55);
+  opacity:0;transform:translate(-50%,-140%) scale(.92);
+  transition:opacity .3s, transform .3s;
+}
+.island-tip.show{opacity:1;transform:translate(-50%,-140%) scale(1);}
+.island-tip::after{
+  content:'';position:absolute;left:50%;bottom:-6px;
+  width:10px;height:10px;transform:translateX(-50%) rotate(45deg);
+  background:var(--glass-strong);border-right:1px solid rgba(159,216,236,.4);
+  border-bottom:1px solid rgba(159,216,236,.4);
+}
+
+/* ============================================================
+   毛玻璃内容弹窗
+   ============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:50;
+  display:grid;place-items:center;
+  padding:5vh 5vw;
+  background:rgba(3,9,22,.55);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;transition:opacity .4s ease;
+}
+.modal-overlay.show{opacity:1;pointer-events:auto;}
+.modal-card{
+  width:min(920px,100%);max-height:88vh;overflow-y:auto;
+  background:linear-gradient(165deg,rgba(18,38,68,.82),rgba(8,19,38,.88));
+  border:1px solid var(--line);border-radius:22px;
+  box-shadow:0 30px 90px rgba(1,6,18,.7);
+  padding:42px 46px;
+  transform:translateY(26px) scale(.97);
+  transition:transform .45s cubic-bezier(.22,1,.36,1);
+  scrollbar-width:thin;scrollbar-color:rgba(159,216,236,.4) transparent;
+}
+.modal-overlay.show .modal-card{transform:translateY(0) scale(1);}
+.modal-card::-webkit-scrollbar{width:6px;}
+.modal-card::-webkit-scrollbar-thumb{background:rgba(159,216,236,.35);border-radius:3px;}
+.modal-close{
+  position:sticky;top:0;float:right;
+  width:38px;height:38px;border-radius:50%;
+  border:1px solid var(--line);display:grid;place-items:center;
+  color:var(--muted);font-size:16px;transition:all .3s;
+  background:rgba(10,22,42,.6);backdrop-filter:blur(8px);
+}
+.modal-close:hover{color:var(--ink);border-color:var(--ice);transform:rotate(90deg);}
+.modal-head{margin-bottom:30px;}
+.modal-head .en{font-size:11px;letter-spacing:.36em;color:var(--ice);margin-bottom:10px;}
+.modal-head h2{font-family:var(--serif);font-size:38px;font-weight:600;letter-spacing:.04em;}
+.modal-head .rule{width:54px;height:2px;margin-top:14px;background:linear-gradient(90deg,var(--ice),transparent);}
+
+/* About */
+.about-bio{color:var(--muted);line-height:2.1;font-size:14.5px;letter-spacing:.04em;}
+.about-bio p+p{margin-top:12px;}
+.skill-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;}
+.skill-tags span{
+  padding:8px 18px;border-radius:999px;font-size:12.5px;letter-spacing:.1em;
+  border:1px solid rgba(159,216,236,.35);color:var(--ice);
+  background:rgba(159,216,236,.07);
+}
+.about-meta{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:32px;
+}
+.about-meta .cell{
+  border:1px solid var(--line);border-radius:14px;padding:18px;
+  background:rgba(159,216,236,.05);
+}
+.about-meta .num{font-family:var(--serif);font-size:30px;color:var(--ice);}
+.about-meta .lbl{font-size:11px;letter-spacing:.2em;color:var(--faint);margin-top:6px;}
+
+/* Projects */
+.project-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.project-card{
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  background:rgba(159,216,236,.05);
+  transition:transform .35s, border-color .35s, box-shadow .35s;
+  display:flex;flex-direction:column;
+}
+.project-card:hover{transform:translateY(-5px);border-color:rgba(159,216,236,.45);box-shadow:0 18px 44px rgba(2,10,26,.5);}
+.project-cover{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0e2138;}
+.project-cover img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.project-card:hover .project-cover img{transform:scale(1.06);}
+.project-cover .tag{
+  position:absolute;top:12px;left:12px;
+  padding:5px 12px;border-radius:999px;font-size:10.5px;letter-spacing:.14em;
+  background:rgba(6,16,32,.66);border:1px solid var(--line);color:var(--ice);
+  backdrop-filter:blur(8px);
+}
+.project-body{padding:20px;display:flex;flex-direction:column;flex:1;}
+.project-body h3{font-family:var(--serif);font-size:21px;margin-bottom:9px;letter-spacing:.04em;}
+.project-body p{font-size:12.5px;line-height:1.9;color:var(--muted);flex:1;}
+.project-body .go{
+  margin-top:16px;font-size:12px;letter-spacing:.16em;color:var(--ice);
+  display:inline-flex;align-items:center;gap:7px;transition:gap .3s;
+}
+.project-card:hover .go{gap:12px;}
+.modal-footer{margin-top:30px;text-align:center;}
+
+/* Gallery */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.gallery-item{
+  position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;
+  border:1px solid var(--line);cursor:pointer;
+}
+.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.gallery-item:hover img{transform:scale(1.07);}
+.gallery-item .cap{
+  position:absolute;inset:auto 0 0 0;padding:34px 16px 14px;
+  background:linear-gradient(transparent,rgba(4,10,24,.88));
+  opacity:0;transform:translateY(10px);transition:all .4s ease;
+}
+.gallery-item:hover .cap{opacity:1;transform:translateY(0);}
+.gallery-item .cap .place{font-family:var(--serif);font-size:17px;letter-spacing:.06em;}
+.gallery-item .cap .date{font-size:10.5px;letter-spacing:.2em;color:var(--ice);margin:4px 0 6px;}
+.gallery-item .cap .words{font-size:11.5px;color:var(--muted);line-height:1.7;}
+
+/* Lightbox */
+.lightbox{
+  position:fixed;inset:0;z-index:70;
+  display:grid;place-items:center;
+  background:rgba(2,7,18,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  opacity:0;pointer-events:none;transition:opacity .35s;
+}
+.lightbox.show{opacity:1;pointer-events:auto;}
+.lightbox img{max-width:88vw;max-height:74vh;border-radius:14px;border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.6);}
+.lb-caption{text-align:center;margin-top:18px;}
+.lb-caption .place{font-family:var(--serif);font-size:22px;}
+.lb-caption .meta{font-size:11.5px;letter-spacing:.2em;color:var(--faint);margin-top:6px;}
+.lb-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:52px;height:52px;border-radius:50%;
+  border:1px solid var(--line);background:var(--glass);
+  display:grid;place-items:center;font-size:20px;color:var(--ice);
+  backdrop-filter:blur(10px);transition:all .3s;
+}
+.lb-nav:hover{background:rgba(159,216,236,.2);}
+.lb-prev{left:3vw;}
+.lb-next{right:3vw;}
+.lb-close{position:absolute;top:26px;right:3vw;}
+.lb-counter{position:absolute;top:32px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.3em;color:var(--faint);}
+
+/* Contact */
+.contact-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.contact-row{
+  display:flex;align-items:center;gap:16px;
+  border:1px solid var(--line);border-radius:16px;padding:20px 22px;
+  background:rgba(159,216,236,.05);transition:all .3s;
+}
+.contact-row:hover{border-color:rgba(159,216,236,.45);background:rgba(159,216,236,.1);}
+.contact-row .ico{font-size:22px;width:38px;text-align:center;}
+.contact-row .k{font-size:10.5px;letter-spacing:.24em;color:var(--faint);margin-bottom:5px;}
+.contact-row .v{font-size:14px;letter-spacing:.05em;color:var(--ink);word-break:break-all;}
+.contact-row.full{grid-column:1/-1;}
+.copy-btn{
+  margin-left:auto;flex:none;
+  padding:8px 16px;border-radius:999px;font-size:11.5px;letter-spacing:.14em;
+  border:1px solid rgba(159,216,236,.4);color:var(--ice);transition:all .3s;
+}
+.copy-btn:hover{background:rgba(159,216,236,.18);}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;bottom:90px;transform:translate(-50%,16px);
+  z-index:90;padding:12px 26px;border-radius:999px;
+  background:var(--glass-strong);border:1px solid rgba(159,216,236,.4);
+  backdrop-filter:blur(12px);font-size:12.5px;letter-spacing:.16em;
+  opacity:0;pointer-events:none;transition:all .35s;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* 探索模式下隐藏左上角品牌，避免与返回按钮重叠 */
+.brand{transition:opacity .5s ease;}
+body.is-explore .brand{opacity:0;pointer-events:none;}
+/* 矮屏紧凑排版，避免首屏文案与导航/底栏重叠 */
+@media (max-height:920px){
+  .kicker{margin-bottom:18px;}
+  .hero-intro{margin-top:18px;}
+  .cta-primary{margin-top:26px;}
+  .identity-tag{margin-top:28px;padding-top:14px;}
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width:900px){
+  .nav{padding:18px 5vw;}
+  .nav-links .link{display:none;}
+  .brand-text .sub{display:none;}
+  .landing-panel{left:6vw;right:6vw;width:auto;top:13vh;transform:none;}
+  .landing-panel.is-hidden{transform:translateY(-24px);}
+  /* 移动端文字压在 3D 场景上时的柔和暗色衬底 */
+  .landing-panel::before{
+    content:'';position:fixed;z-index:-1;left:0;top:0;bottom:0;width:66%;
+    background:linear-gradient(90deg,rgba(4,10,24,.66),rgba(4,10,24,.28) 72%,transparent);
+    pointer-events:none;
+  }
+  .kicker{font-size:10px;letter-spacing:.26em;margin-bottom:16px;}
+  .hero-title{font-size:clamp(32px,9vw,44px);}
+  .hero-intro{font-size:13px;}
+  .identity-tag{margin-top:26px;}
+  .cta-primary{margin-top:26px;padding:14px 28px;}
+  .slogan,.operate-hint{display:none;}
+  .bottom-bar{justify-content:center;bottom:18px;}
+  .landmark-pill button{padding:8px 12px;font-size:11px;}
+  .view-tools{right:4vw;bottom:78px;flex-direction:row;}
+  .tool-chip{padding:9px 13px;font-size:11px;}
+  .back-btn{top:18px;left:5vw;}
+  .modal-card{padding:30px 22px;}
+  .modal-head h2{font-size:29px;}
+  .project-grid{grid-template-columns:1fr;}
+  .gallery-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .contact-list{grid-template-columns:1fr;}
+  .about-meta{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .about-meta .cell{padding:12px 8px;text-align:center;}
+  .about-meta .num{font-size:22px;}
+  .hotspot-label{font-size:11px;padding:7px 12px 7px 8px;}
+  .lb-nav{width:42px;height:42px;}
+}
+@media (max-width:420px){
+  .brand-text .sub{letter-spacing:.22em;}
+  .gallery-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="scene-canvas"></canvas>
+
+<!-- ============ 顶部导航 ============ -->
+<header class="nav">
+  <div class="brand">
+    <div class="brand-logo" id="brand-logo">W</div>
+    <div class="brand-text">
+      <div class="name" id="brand-name">WYY</div>
+      <div class="sub">A LITTLE WORLD OF MINE</div>
+    </div>
+  </div>
+  <nav class="nav-links">
+    <button class="link" data-landmark="about">关于我</button>
+    <button class="link" data-landmark="projects">作品集</button>
+    <button class="link" data-landmark="gallery">光影相册</button>
+    <button class="pill-btn" data-landmark="contact">联系我 <span>↗</span></button>
+  </nav>
+</header>
+
+<!-- ============ 首屏左侧文案 ============ -->
+<section class="landing-panel" id="landing-panel">
+  <div class="kicker" id="ui-kicker">WELCOME TO MY WINTER ISLAND</div>
+  <h1 class="hero-title">
+    <span id="ui-title-name">WYY</span>的 <span class="star">✦</span> 小岛
+  </h1>
+  <div class="hero-intro" id="ui-intro"></div>
+  <button class="cta-primary" id="cta-explore">去岛上逛逛 <span>↗</span></button>
+  <div class="identity-tag" id="ui-identity"></div>
+</section>
+
+<!-- ============ 底部信息栏 ============ -->
+<footer class="bottom-bar" id="bottom-bar">
+  <div class="slogan" id="ui-slogan"></div>
+  <div class="landmark-pill" id="landmark-pill"></div>
+  <div class="operate-hint">点击小岛登岛 · 拖动旋转 · 滚轮缩放</div>
+</footer>
+
+<!-- ============ 探索模式控件 ============ -->
+<button class="pill-btn back-btn" id="back-btn">← 返回首页</button>
+<div class="view-tools" id="view-tools">
+  <button class="tool-chip" id="tool-snow"><span class="dot"></span>飘雪</button>
+  <button class="tool-chip" id="tool-rotate"><span class="dot"></span>自转</button>
+  <button class="tool-chip" id="tool-reset"><span class="dot" style="background:var(--warm);box-shadow:0 0 10px var(--warm)"></span>重置视角</button>
+</div>
+
+<!-- 3D 热点标签容器（JS 动态投影定位） -->
+<div id="hotspot-layer"></div>
+<!-- 悬停小岛提示 -->
+<div class="island-tip" id="island-tip">点击进入小岛</div>
+
+<!-- ============ 内容弹窗 ============ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card" id="modal-card">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ============ 灯箱 ============ -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-counter" id="lb-counter"></div>
+  <button class="lb-nav lb-prev" id="lb-prev">‹</button>
+  <button class="lb-nav lb-close modal-close" id="lb-close">✕</button>
+  <div>
+    <img id="lb-img" src="" alt="风景大图" />
+    <div class="lb-caption">
+      <div class="place" id="lb-place"></div>
+      <div class="meta" id="lb-meta"></div>
+    </div>
+  </div>
+  <button class="lb-nav lb-next" id="lb-next">›</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============ Three.js via CDN（importmap） ============ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* ════════════════════════════════════════════════════════════
+   ① CONFIG —— 所有个人内容都在这里改（昵称 / 简介 / 项目 / 相册 / 链接）
+   ════════════════════════════════════════════════════════════ */
+// 文生图地址（用于项目封面 / 相册演示图，替换成你自己的图片路径即可，例如 './photos/01.jpg'）
+const t2i = (prompt, size = 'landscape_4_3') =>
+  `https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=${size}`;
+
+const CONFIG = {
+  /* —— 基础身份 —— */
+  name: 'WYY',                         // 你的昵称
+  logoLetter: 'W',                     // 左上角首字母 Logo
+  subtitleEn: 'A LITTLE WORLD OF MINE',
+  welcomeLine: 'WELCOME TO MY WINTER ISLAND',
+  intro: [                             // 两行个人介绍
+    '在一座永不停雪的小岛上，收藏代码、照片与所有浪漫的瞬间。',
+    '欢迎登岛，愿这里的星光与海风，也能吹到你那里。'
+  ],
+  identityTag: '比现生更爱追星、比追星女更专注现生的追星女 / 风景爱好者',
+  sloganEn: 'KEEP WARM · KEEP WANDERING · KEEP SHINING',
+
+  /* —— 01 城堡 · 关于我 —— */
+  about: {
+    bio: [
+      '你好，我是 WYY。白天写前端与交互体验，晚上追演唱会、修风景照，周末则带着相机去追一场雪或一场极光。',
+      '我喜欢把工程的严谨与审美结合起来：这个小岛用 Three.js 程序化搭建，每一块雪、每一簇灯光都来自代码；而岛上收藏的，是我真实走过的风景。'
+    ],
+    skills: ['Three.js / WebGL', '前端工程', '交互设计', '风光摄影', 'UI 设计', '视频剪辑'],
+    stats: [
+      { num: '36', label: '到访城市' },
+      { num: '12k', label: '快门次数' },
+      { num: '∞', label: '浪漫存量' }
+    ]
+  },
+
+  /* —— 02 喷泉 · 作品集（封面图可替换为自己的截图） —— */
+  projects: [
+    {
+      title: '韩语学习小站',
+      tag: '语言学习 · Web',
+      desc: '我自己做的韩语学习网页，把单词、语法与日常对话整理成轻便的在线学习工具，打开浏览器就能随时练习。',
+      url: 'https://5-anuin.github.io/-app/',
+      cover: t2i('korean language learning website interface, hangul letters, notebook and coffee on cozy desk, soft winter light, elegant flat illustration', 'landscape_16_9')
+    },
+    {
+      title: '雪国旅拍杂志',
+      tag: '视觉设计',
+      desc: '一次冰岛冬季旅拍的线上杂志设计，栅格排版与沉浸式滚动叙事相结合。',
+      url: 'https://github.com/',
+      cover: t2i('open travel magazine with winter landscape photographs on white marble table, flat lay, soft light', 'landscape_16_9')
+    },
+    {
+      title: '暖冬效率工具',
+      tag: '效率应用',
+      desc: '面向创作者的轻量任务管理 PWA，支持离线使用、数据加密与跨端同步。',
+      url: 'https://github.com/',
+      cover: t2i('minimal elegant desk workspace with laptop, warm lamp light, snow forest outside window, morning', 'landscape_16_9')
+    }
+  ],
+  allProjectsUrl: 'https://github.com/5-anuin',   // “查看全部作品”跳转地址
+
+  /* —— 03 雪山 · 光影相册（替换 src 为自己的照片即可） —— */
+  gallery: [
+    { src: t2i('green aurora borealis over frozen lake with snow mountains reflection, starry night, photographic'), place: '冰岛 · 杰古沙龙冰河湖', date: '2026.02.14', caption: '极光在湖面铺开的那一刻，世界安静得只剩下快门声。' },
+    { src: t2i(' giant blue crystal ice cave inside glacier, ethereal light, photographic landscape'), place: '冰岛 · 蓝冰洞', date: '2026.02.16', caption: '走进冰川内部，像走进了一颗正在呼吸的蓝宝石。' },
+    { src: t2i('snow covered pine forest with soft morning mist, winter wonderland, photographic landscape'), place: '长白山 · 地下森林', date: '2026.01.05', caption: '雾凇挂满枝头，阳光穿过时整座森林都在发光。' },
+    { src: t2i('black sand beach with snow, lighthouse and stormy waves, winter, photographic landscape'), place: '北海道 · 能取岬', date: '2025.12.20', caption: '黑色悬崖、白雪与怒浪，是冬天最有力量感的配色。' },
+    { src: t2i('milky way starry night over snowy mountain peaks, clear sky, astrophotography landscape'), place: '青海 · 岗什卡雪峰', date: '2025.10.03', caption: '海拔四千米的星空，银河仿佛伸手就能摘下。' },
+    { src: t2i('turquoise iceberg lagoon at golden sunset, floating ice, photographic landscape'), place: '冰岛 · 钻石沙滩', date: '2026.02.18', caption: '碎冰像钻石一样散落在黑色沙滩，落日把它们点燃。' }
+  ],
+
+  /* —— 04 码头 · 联系我 —— */
+  contact: {
+    email: '1468977424@qq.com',            // 改成你的邮箱
+    links: [
+      { icon: '🐙', label: 'GitHub', value: 'github.com/5-anuin', url: 'https://github.com/5-anuin' }
+    ]
+  },
+
+  /* —— 地标导航（与 3D 热点一一对应） —— */
+  landmarks: [
+    { id: 'about',    no: '01', name: '城堡 · 关于我' },
+    { id: 'projects', no: '02', name: '喷泉 · 作品集' },
+    { id: 'gallery',  no: '03', name: '雪山 · 光影相册' },
+    { id: 'contact',  no: '04', name: '码头 · 联系我' }
+  ],
+
+  /* —— 模型替换：填入 .glb 文件地址（相对/绝对/URL 均可）后会自动替换程序化模型 ——
+     例如：'./models/winter-island.glb' —— 留空字符串 '' 时使用下方程序化几何体。 */
+  MODEL_GLB_URL: ''
+};
+
+/* ════════════════════════════════════════════════════════════
+   ② 渲染器 / 场景 / 相机 / 控制器
+   ════════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('scene-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.08;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x071226, 0.0105);   // 与 CSS 深蓝背景融合的雾
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 260);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.enablePan = false;
+controls.minDistance = 6;          // 最近缩放距离（防穿帮）
+controls.maxDistance = 28;         // 最远缩放距离
+controls.minPolarAngle = 0.22;     // 俯仰角限制
+controls.maxPolarAngle = 1.46;
+controls.autoRotate = true;        // 缓慢自转
+controls.autoRotateSpeed = 0.55;
+
+/* 视角预设：首屏（岛偏右）/ 探索默认 / 四地标聚焦 */
+const isPortrait = window.innerWidth / window.innerHeight < 0.85;
+const VIEW_LANDING = {
+  pos: new THREE.Vector3(15.6, 10.6, 17.6),
+  tg : new THREE.Vector3(isPortrait ? -2.6 : -8.6, 1.4, 0)
+};
+const VIEW_EXPLORE = {
+  pos: new THREE.Vector3(11.2, 8.2, 13.2),
+  tg : new THREE.Vector3(0, 1.2, 0)
+};
+const FOCUS_VIEW = {
+  about:    { pos: new THREE.Vector3(11.8, 6.6, -1.8), tg: new THREE.Vector3(5.7, 2.4, -6.2) },
+  projects: { pos: new THREE.Vector3(7.2, 5.4, 8.0),   tg: new THREE.Vector3(0.5, 1.3, 2.0) },
+  gallery:  { pos: new THREE.Vector3(-3.2, 6.2, -3.6), tg: new THREE.Vector3(-4.6, 3.6, -9.2) },
+  contact:  { pos: new THREE.Vector3(10.6, 4.4, 14.8), tg: new THREE.Vector3(6.8, 0.8, 10.6) }
+};
+camera.position.copy(VIEW_LANDING.pos);
+controls.target.copy(VIEW_LANDING.tg);
+
+/* —— 灯光 —— */
+scene.add(new THREE.HemisphereLight(0xbcd8ff, 0x22304c, 0.72));
+const moonLight = new THREE.DirectionalLight(0xdfeaff, 1.35);
+moonLight.position.set(14, 20, 9);
+moonLight.castShadow = true;
+moonLight.shadow.mapSize.set(2048, 2048);
+moonLight.shadow.camera.left = -20;
+moonLight.shadow.camera.right = 20;
+moonLight.shadow.camera.top = 20;
+moonLight.shadow.camera.bottom = -20;
+moonLight.shadow.camera.far = 60;
+moonLight.shadow.bias = -0.0006;
+scene.add(moonLight);
+scene.add(new THREE.AmbientLight(0x33507c, 0.35));
+
+/* ════════════════════════════════════════════════════════════
+   ③ 程序化纹理（光晕 / 雪花 / 极光，均为 Canvas 生成，无外部依赖）
+   ════════════════════════════════════════════════════════════ */
+function makeGlowTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.25, 'rgba(255,244,220,.85)');
+  g.addColorStop(0.6, 'rgba(255,220,160,.22)');
+  g.addColorStop(1, 'rgba(255,220,160,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function makeSnowTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.4, 'rgba(235,246,255,.75)');
+  g.addColorStop(1, 'rgba(235,246,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+function makeAuroraTexture(hue) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 512, 256);
+  // 几道柔和的光带
+  for (let band = 0; band < 4; band++) {
+    const y = 60 + band * 38;
+    const grad = ctx.createLinearGradient(0, y - 70, 0, y + 70);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(0.5, hue[band % hue.length]);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x <= 512; x += 32) {
+      ctx.lineTo(x, y + Math.sin(x * 0.02 + band * 1.7) * 22);
+    }
+    ctx.lineTo(512, y + 90); ctx.lineTo(0, y + 90);
+    ctx.closePath(); ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const glowTex = makeGlowTexture();
+const snowTex = makeSnowTexture();
+
+function glowSprite(color = 0xffe6b0, size = 2, opacity = 1) {
+  const m = new THREE.SpriteMaterial({
+    map: glowTex, color, transparent: true, opacity,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const s = new THREE.Sprite(m);
+  s.scale.set(size, size, 1);
+  return s;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ④ 材质库（冷调银白 / 冰蓝 / 大理石 + 暖光点缀）
+   ════════════════════════════════════════════════════════════ */
+const MAT = {
+  rock:      new THREE.MeshStandardMaterial({ color: 0x39455c, roughness: 0.95, flatShading: true }),
+  rockDark:  new THREE.MeshStandardMaterial({ color: 0x2a3346, roughness: 1, flatShading: true }),
+  snow:      new THREE.MeshStandardMaterial({ color: 0xf2f7fd, roughness: 0.72 }),
+  snowBlue:  new THREE.MeshStandardMaterial({ color: 0xdcebf5, roughness: 0.8 }),
+  sand:      new THREE.MeshStandardMaterial({ color: 0xe9dcc0, roughness: 0.9 }),
+  marble:    new THREE.MeshStandardMaterial({ color: 0xe6ecf3, roughness: 0.45, metalness: 0.05 }),
+  stone:     new THREE.MeshStandardMaterial({ color: 0xc3d0de, roughness: 0.8, flatShading: true }),
+  mountain:  new THREE.MeshStandardMaterial({ color: 0x6e7f96, roughness: 0.92, flatShading: true }),
+  pine:      new THREE.MeshStandardMaterial({ color: 0x2e4b41, roughness: 0.9, flatShading: true }),
+  hedge:     new THREE.MeshStandardMaterial({ color: 0x35544a, roughness: 0.95, flatShading: true }),
+  wood:      new THREE.MeshStandardMaterial({ color: 0x7c5d40, roughness: 0.85 }),
+  roof:      new THREE.MeshStandardMaterial({ color: 0x9db4cc, roughness: 0.6, flatShading: true }),
+  ice:       new THREE.MeshStandardMaterial({ color: 0xbfe9f8, roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.78, emissive: 0x2f6f8e, emissiveIntensity: 0.35 }),
+  waterDeep: new THREE.MeshStandardMaterial({ color: 0x1d4e77, roughness: 0.18, metalness: 0.12, transparent: true, opacity: 0.82 }),
+  waterShal: new THREE.MeshStandardMaterial({ color: 0x5fb6c2, roughness: 0.2, transparent: true, opacity: 0.42 }),
+  foam:      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false }),
+  warmWin:   new THREE.MeshBasicMaterial({ color: 0xffd9a0 }),
+  star:      new THREE.MeshStandardMaterial({ color: 0xfff2d4, emissive: 0xffd9a0, emissiveIntensity: 2.2, roughness: 0.3 })
+};
+
+/* ════════════════════════════════════════════════════════════
+   ⑤ 环境：星空 / 极光 / 飘雪 / 海水
+   ════════════════════════════════════════════════════════════ */
+const envGroup = new THREE.Group();
+scene.add(envGroup);
+
+/* —— 繁星（Points） —— */
+{
+  const N = 900, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const r = 70 + Math.random() * 30;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(THREE.MathUtils.randFloatSpread(1.6));
+    pos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+    pos[i * 3 + 1] = Math.abs(r * Math.cos(phi)) * 0.9 - 8;
+    pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const stars = new THREE.Points(g, new THREE.PointsMaterial({
+    map: glowTex, color: 0xdceaff, size: 0.55, sizeAttenuation: true,
+    transparent: true, opacity: 0.9, depthWrite: false
+  }));
+  envGroup.add(stars);
+}
+
+/* —— 极光光带（环绕布置，360° 旋转都能看到） —— */
+const auroraMeshes = [];
+{
+  const texA = makeAuroraTexture(['rgba(88,214,196,.55)', 'rgba(120,170,255,.4)', 'rgba(140,255,210,.45)', 'rgba(160,140,255,.32)']);
+  for (let i = 0; i < 4; i++) {
+    const m = new THREE.MeshBasicMaterial({
+      map: texA, transparent: true, opacity: 0.32,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+    });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(52, 20), m);
+    const ang = (i / 4) * Math.PI * 2 + 0.4;
+    plane.position.set(Math.cos(ang) * 58, 20 + i * 1.5, Math.sin(ang) * 58);
+    plane.lookAt(0, 16, 0);
+    envGroup.add(plane);
+    auroraMeshes.push(plane);
+  }
+}
+
+/* —— 3D 飘雪粒子 —— */
+const SNOW_COUNT = 700;
+const snowVel = new Float32Array(SNOW_COUNT);
+let snowPoints;
+{
+  const pos = new Float32Array(SNOW_COUNT * 3);
+  for (let i = 0; i < SNOW_COUNT; i++) {
+    pos[i * 3]     = THREE.MathUtils.randFloatSpread(44);
+    pos[i * 3 + 1] = THREE.MathUtils.randFloat(-1, 24);
+    pos[i * 3 + 2] = THREE.MathUtils.randFloatSpread(44);
+    snowVel[i] = THREE.MathUtils.randFloat(0.55, 1.25);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  snowPoints = new THREE.Points(g, new THREE.PointsMaterial({
+    map: snowTex, color: 0xffffff, size: 0.28,
+    transparent: true, opacity: 0.9, depthWrite: false
+  }));
+  envGroup.add(snowPoints);
+}
+
+/* —— 海水：深蓝大平面 + 浅青绿内圈 + 白色浪花环 —— */
+{
+  const deep = new THREE.Mesh(new THREE.PlaneGeometry(180, 180), MAT.waterDeep);
+  deep.rotation.x = -Math.PI / 2;
+  deep.position.y = -1.15;
+  deep.receiveShadow = true;
+  envGroup.add(deep);
+
+  const shallow = new THREE.Mesh(new THREE.CircleGeometry(17.5, 56), MAT.waterShal);
+  shallow.rotation.x = -Math.PI / 2;
+  shallow.position.y = -1.05;
+  envGroup.add(shallow);
+
+  const foam1 = new THREE.Mesh(new THREE.RingGeometry(12.1, 13.4, 56), MAT.foam);
+  foam1.rotation.x = -Math.PI / 2; foam1.position.y = -0.98;
+  envGroup.add(foam1);
+  const foam2 = new THREE.Mesh(new THREE.RingGeometry(13.8, 15.0, 56), MAT.foam.clone());
+  foam2.material.opacity = 0.25;
+  foam2.rotation.x = -Math.PI / 2; foam2.position.y = -1.0;
+  envGroup.add(foam2);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑥ 冰雪浮岛主体（程序化几何体，参考上传图片布局）
+   ════════════════════════════════════════════════════════════ */
+const island = new THREE.Group();
+scene.add(island);
+const GY = 0.4;   // 岛面基准高度
+
+function box(w, h, d, mat, x, y, z, parent = island, shadow = true) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  m.castShadow = shadow; m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+function cyl(rt, rb, h, seg, mat, x, y, z, parent = island) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+
+/* —— 6.1 深灰色方形切面海底岩石地基 —— */
+{
+  const g = new THREE.CylinderGeometry(11.7, 8.0, 5.4, 4, 1);
+  g.rotateY(Math.PI / 4);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {     // 顶点扰动，制造不规则切面
+    const x = p.getX(i), z = p.getZ(i);
+    if (Math.abs(x) > 0.4 || Math.abs(z) > 0.4) {
+      const n = 1 + (Math.random() - 0.5) * 0.13;
+      p.setX(i, x * n);
+      p.setZ(i, z * n);
+      p.setY(i, p.getY(i) + (Math.random() - 0.5) * 0.3);
+    }
+  }
+  g.computeVertexNormals();
+  const rock = new THREE.Mesh(g, MAT.rock);
+  rock.position.y = -2.7;
+  rock.castShadow = true; rock.receiveShadow = true;
+  island.add(rock);
+
+  // 积雪顶盖（方形）
+  const cap = new THREE.Mesh((() => {
+    const cg = new THREE.CylinderGeometry(11.4, 11.8, 0.85, 4, 1);
+    cg.rotateY(Math.PI / 4); return cg;
+  })(), MAT.snow);
+  cap.position.y = 0.02;
+  cap.castShadow = true; cap.receiveShadow = true;
+  island.add(cap);
+}
+
+/* —— 6.2 前侧与两侧蜿蜒沙滩 —— */
+{
+  box(19.4, 0.34, 8.6, MAT.sand, 0, GY - 0.22, 6.3);
+  const sideL = box(7.2, 0.3, 4.6, MAT.sand, -8.6, GY - 0.24, 4.2);
+  sideL.rotation.y = 0.5;
+  const sideR = box(7.2, 0.3, 4.6, MAT.sand, 8.6, GY - 0.24, 4.2);
+  sideR.rotation.y = -0.5;
+  // 沙滩上的零散深色礁石
+  [[8.9, 8.0, 0.8], [9.6, 7.0, 0.55], [-9.2, 6.8, 0.7], [-8.4, 8.6, 0.5]].forEach(([x, z, s]) => {
+    const r = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), MAT.rockDark);
+    r.position.set(x, GY - 0.1, z);
+    r.rotation.set(Math.random(), Math.random(), Math.random());
+    r.castShadow = true; r.receiveShadow = true;
+    island.add(r);
+  });
+}
+
+/* —— 6.3 后方连绵积雪山峰 —— */
+function makeMountain(x, z, h, r) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.ConeGeometry(r, h, 6), MAT.mountain);
+  body.position.y = h / 2; body.castShadow = true;
+  const capH = h * 0.44;
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(r * 0.62, capH, 6), MAT.snow);
+  cap.position.y = h - capH / 2 + 0.06; cap.castShadow = true;
+  g.add(body, cap);
+  g.position.set(x, GY, z);
+  island.add(g);
+}
+[[-9.2, -9.4, 7.2, 3.1], [-5.2, -10.4, 9.4, 3.9], [-1.0, -9.8, 7.6, 3.3],
+ [3.6, -10.2, 8.8, 3.6], [8.4, -9.2, 6.6, 2.9]].forEach(([x, z, h, r]) => makeMountain(x, z, h, r));
+
+/* —— 6.4 积雪松树 / 树篱 —— */
+function makePine(s = 1) {
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12 * s, 0.16 * s, 0.55 * s, 6), MAT.wood);
+  trunk.position.y = 0.27 * s; trunk.castShadow = true;
+  g.add(trunk);
+  [[0.88, 1.15, 0.85], [0.66, 1.0, 1.62], [0.44, 0.85, 2.28]].forEach(([r, h, y]) => {
+    const c = new THREE.Mesh(new THREE.ConeGeometry(r * s, h * s, 7), MAT.pine);
+    c.position.y = y * s; c.castShadow = true; g.add(c);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(r * 1.03 * s, h * 0.4 * s, 7), MAT.snow);
+    cap.position.y = (y + h * 0.3) * s; cap.castShadow = true; g.add(cap);
+  });
+  return g;
+}
+// 后方密集松林
+[[-8.2,-7.6,1.15],[-6.6,-8.6,.95],[-3.6,-8.2,1.05],[-2.2,-7.4,.85],[1.6,-8.4,1.1],
+ [5.8,-8.6,.95],[7.6,-7.8,1.15],[9.4,-6.6,.9],[-9.6,-5.2,.95],[-7.4,-5.6,.8],
+ [9.8,-4.4,.85],[-5.6,-6.4,.78],[7.2,-5.8,.82],[0.4,-7.6,.9]].forEach(([x,z,s]) => {
+  const t = makePine(s);
+  t.position.set(x, GY, z);
+  t.rotation.y = Math.random() * Math.PI;
+  island.add(t);
+});
+
+/* —— 6.5 中央庭院：积雪树篱迷宫 + 石板路 —— */
+const hedgeData = [
+  [-3.6, 0.4, 3.0, 0.35], [-3.6, 2.4, 0.35, 2.2], [3.4, 1.0, 0.35, 3.4],
+  [3.4, 3.8, 2.8, 0.35], [-1.4, 4.6, 3.2, 0.35], [-5.6, 0.4, 0.35, 2.4],
+ [0.8, -1.7, 3.4, 0.35], [-4.8, -4.7, 3.2, 0.35], [4.8, -1.6, 0.35, 2.0],
+ [-1.8, -3.4, 2.2, 0.35], [2.2, 5.4, 3.6, 0.35]
+];
+hedgeData.forEach(([x, z, w, d]) => {
+  box(w, 0.5, d, MAT.hedge, x, GY + 0.25, z);
+  box(w + 0.06, 0.12, d + 0.06, MAT.snow, x, GY + 0.56, z);
+});
+// 石板路（喷泉 → 八角池 / 台阶 / 码头方向）
+for (let i = 0; i < 7; i++) box(1.05, 0.08, 0.7, MAT.stone, 0.5, GY + 0.02, 3.0 + i * 0.85, island, false);
+for (let i = 0; i < 6; i++) box(0.75, 0.08, 1.0, MAT.stone, -1.2 - i * 0.78, GY + 0.02, 0.6 - i * 0.62, island, false);
+for (let i = 0; i < 5; i++) box(0.9, 0.08, 0.7, MAT.stone, 1.6 + i * 0.78, GY + 0.02, 0.4 - i * 0.7, island, false);
+
+/* —— 6.6 中央圆形冰冻喷泉广场 —— */
+{
+  const fx = 0.5, fz = 2.0;
+  cyl(2.35, 2.5, 0.42, 24, MAT.stone, fx, GY + 0.21, fz);
+  cyl(1.98, 1.98, 0.1, 24, MAT.ice, fx, GY + 0.46, fz);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(2.05, 0.12, 10, 32), MAT.marble);
+  rim.rotation.x = Math.PI / 2; rim.position.set(fx, GY + 0.5, fz);
+  rim.castShadow = true; island.add(rim);
+  // 中央冰雕水晶
+  const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.62, 0), MAT.ice);
+  crystal.scale.set(0.8, 1.7, 0.8);
+  crystal.position.set(fx, GY + 1.35, fz);
+  crystal.castShadow = true; island.add(crystal);
+  const crystalGlow = glowSprite(0x9fd8ec, 2.6, 0.8);
+  crystalGlow.position.set(fx, GY + 1.35, fz);
+  island.add(crystalGlow);
+  // 四支小冰喷
+  for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 2 + Math.PI / 4;
+    const jet = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.8, 8), MAT.ice);
+    jet.position.set(fx + Math.cos(a) * 1.35, GY + 0.85, fz + Math.sin(a) * 1.35);
+    island.add(jet);
+  }
+  const pl = new THREE.PointLight(0x9fd8ec, 12, 9, 2);
+  pl.position.set(fx, GY + 1.6, fz);
+  island.add(pl);
+}
+
+/* —— 6.7 左上方八角形水池庭院 —— */
+{
+  const px = -4.4, pz = -2.9;
+  cyl(1.75, 1.85, 0.38, 8, MAT.stone, px, GY + 0.19, pz);
+  cyl(1.42, 1.42, 0.1, 8, MAT.waterDeep, px, GY + 0.42, pz);
+  const rim8 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.1, 8, 8), MAT.marble);
+  rim8.rotation.x = Math.PI / 2; rim8.position.set(px, GY + 0.44, pz);
+  island.add(rim8);
+  const sc = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 6), MAT.ice);
+  sc.position.set(px, GY + 0.85, pz); island.add(sc);
+}
+
+/* —— 6.8 右上方高地：大理石城堡 + 穹顶凉亭 + 星星石柱 + 宽石阶 —— */
+const PLATFORM_TOP = GY + 0.85;
+{
+  // 高地平台
+  box(7.4, 0.85, 5.2, MAT.marble, 5.7, GY + 0.42, -6.3);
+  // 白色宽石阶（4 级）
+  for (let i = 0; i < 4; i++) {
+    box(3.4, 0.18 + i * 0.16, 0.62, MAT.marble, 4.3, GY + (0.09 + i * 0.08), -3.35 - i * 0.55);
+  }
+  // 城墙（正面 + 右侧，带垛口）
+  const wall = box(5.6, 1.35, 0.42, MAT.marble, 5.6, PLATFORM_TOP + 0.67, -3.75);
+  for (let i = 0; i < 8; i++) box(0.34, 0.34, 0.46, MAT.snow, 3.1 + i * 0.72, PLATFORM_TOP + 1.5, -3.75);
+  const wallR = box(0.42, 1.35, 3.6, MAT.marble, 9.15, PLATFORM_TOP + 0.67, -5.6);
+  for (let i = 0; i < 5; i++) box(0.46, 0.34, 0.34, MAT.snow, 9.15, PLATFORM_TOP + 1.5, -6.9 + i * 0.7);
+  // 主圆顶塔楼
+  const tx = 7.3, tz = -7.0;
+  box(2.3, 3.1, 2.3, MAT.marble, tx, PLATFORM_TOP + 1.55, tz);
+  for (let i = 0; i < 4; i++) {
+    box(0.36, 0.34, 0.36, MAT.snow, tx - 0.86 + i * 0.57, PLATFORM_TOP + 3.25, tz - 1.15);
+    box(0.36, 0.34, 0.36, MAT.snow, tx - 0.86 + i * 0.57, PLATFORM_TOP + 3.25, tz + 1.15);
+  }
+  // 暖光窗户
+  [[tx - 0.45, tz + 1.16], [tx + 0.45, tz + 1.16], [tx + 1.16, tz - 0.4], [tx + 1.16, tz + 0.4]]
+    .forEach(([x, z], i) => {
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.5), MAT.warmWin);
+      win.position.set(x, PLATFORM_TOP + 1.7, z);
+      win.rotation.y = i < 2 ? 0 : Math.PI / 2;
+      island.add(win);
+    });
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(1.32, 14, 9, 0, Math.PI * 2, 0, Math.PI / 2), MAT.roof);
+  dome.position.set(tx, PLATFORM_TOP + 3.1, tz); dome.castShadow = true; island.add(dome);
+  cyl(0.08, 0.08, 0.5, 6, MAT.marble, tx, PLATFORM_TOP + 3.7, tz);
+  const finial = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), MAT.star);
+  finial.position.set(tx, PLATFORM_TOP + 4.05, tz); island.add(finial);
+  // 副圆顶建筑
+  const sx = 4.7, sz = -7.7;
+  box(1.7, 1.9, 1.7, MAT.marble, sx, PLATFORM_TOP + 0.95, sz);
+  const dome2 = new THREE.Mesh(new THREE.SphereGeometry(0.98, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), MAT.roof);
+  dome2.position.set(sx, PLATFORM_TOP + 1.9, sz); dome2.castShadow = true; island.add(dome2);
+  const win2 = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.42), MAT.warmWin);
+  win2.position.set(sx, PLATFORM_TOP + 1.0, sz + 0.86); island.add(win2);
+
+  /* 欧式雕花穹顶凉亭（6 柱 + 穹顶 + 顶星） */
+  const gx = 2.7, gz = -6.4;
+  cyl(1.7, 1.8, 0.3, 16, MAT.stone, gx, PLATFORM_TOP + 0.15, gz);
+  for (let i = 0; i < 6; i++) {
+    const a = i / 6 * Math.PI * 2;
+    cyl(0.09, 0.11, 2.2, 8, MAT.marble,
+      gx + Math.cos(a) * 1.32, PLATFORM_TOP + 1.4, gz + Math.sin(a) * 1.32);
+  }
+  const gDome = new THREE.Mesh(new THREE.SphereGeometry(1.62, 14, 9, 0, Math.PI * 2, 0, Math.PI / 2), MAT.roof);
+  gDome.position.set(gx, PLATFORM_TOP + 2.5, gz); gDome.castShadow = true; island.add(gDome);
+  const gStar = new THREE.Mesh(new THREE.OctahedronGeometry(0.26), MAT.star);
+  gStar.position.set(gx, PLATFORM_TOP + 3.45, gz); island.add(gStar);
+  const gGlow = glowSprite(0xffe6b0, 1.6, 0.9);
+  gGlow.position.copy(gStar.position); island.add(gGlow);
+
+  /* 四根发光星星石柱（夹石阶排列） */
+  [[2.35, -3.25], [6.25, -3.25], [2.35, -5.05], [6.25, -5.05]].forEach(([x, z]) => {
+    box(0.4, 2.5, 0.4, MAT.marble, x, PLATFORM_TOP + 1.25, z);
+    box(0.56, 0.22, 0.56, MAT.snow, x, PLATFORM_TOP + 2.6, z);
+    const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.34), MAT.star);
+    star.position.set(x, PLATFORM_TOP + 3.05, z); island.add(star);
+    const sp = glowSprite(0xffe6b0, 1.8, 0.85);
+    sp.position.copy(star.position); island.add(sp);
+  });
+  const warm = new THREE.PointLight(0xffd9a0, 18, 14, 2);
+  warm.position.set(4.3, PLATFORM_TOP + 2.6, -4.6);
+  island.add(warm);
+}
+
+/* —— 6.9 雪地路灯（暖光冷暖点缀） —— */
+function makeLamp(x, z) {
+  const g = new THREE.Group();
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 1.5, 6), MAT.rockDark);
+  pole.position.y = 0.75; pole.castShadow = true; g.add(pole);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 8), MAT.star);
+  head.position.y = 1.58; g.add(head);
+  const sp = glowSprite(0xffd9a0, 1.1, 0.85);
+  sp.position.y = 1.58; g.add(sp);
+  g.position.set(x, GY, z);
+  island.add(g);
+}
+[[-1.6, 4.4], [2.6, 4.6], [-2.4, -1.2], [3.4, -2.4], [-6.6, 3.2]].forEach(([x, z]) => makeLamp(x, z));
+
+/* —— 6.10 小木屋 ×2（暖窗，丰富庭院层次） —— */
+function makeCottage(x, z, rot, wallColor) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.1, 1.3),
+    new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.8, flatShading: true }));
+  body.position.y = 0.55; body.castShadow = true; g.add(body);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(1.15, 0.8, 4), MAT.roof);
+  roof.rotation.y = Math.PI / 4; roof.position.y = 1.5; roof.castShadow = true; g.add(roof);
+  const snowRoof = new THREE.Mesh(new THREE.ConeGeometry(1.18, 0.3, 4), MAT.snow);
+  snowRoof.rotation.y = Math.PI / 4; snowRoof.position.y = 1.62; g.add(snowRoof);
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.34), MAT.warmWin);
+  win.position.set(0, 0.6, 0.66); g.add(win);
+  g.position.set(x, GY, z); g.rotation.y = rot;
+  island.add(g);
+}
+makeCottage(-6.4, 4.6, 0.5, 0x8a6a4c);
+makeCottage(2.0, -4.6, -0.4, 0x5f7a86);
+
+/* —— 6.11 前方木质栈桥码头（右前沙滩延伸入海） —— */
+{
+  for (let i = 0; i < 5; i++) {
+    box(1.7, 0.14, 0.82, MAT.wood, 6.8, -0.18, 9.3 + i * 0.82);
+  }
+  [[6.1, 9.4], [7.5, 9.4], [6.1, 12.5], [7.5, 12.5]].forEach(([x, z]) => {
+    cyl(0.09, 0.11, 1.5, 6, MAT.rockDark, x, -0.75, z);
+  });
+  // 码头尽头的暖灯
+  const lantern = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), MAT.star);
+  lantern.position.set(6.8, 0.55, 12.75); island.add(lantern);
+  const lg = glowSprite(0xffd9a0, 1.5, 0.9);
+  lg.position.copy(lantern.position); island.add(lg);
+  const pl = new THREE.PointLight(0xffd9a0, 10, 8, 2);
+  pl.position.copy(lantern.position); island.add(pl);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑦ 4 个 3D 悬浮交互热点（脉冲标记 + HTML 序号标签）
+   ════════════════════════════════════════════════════════════ */
+const hotspotLayer = document.getElementById('hotspot-layer');
+const hotspotDefs = [
+  { id: 'about',    pos: new THREE.Vector3(5.7, PLATFORM_TOP + 3.4, -6.2) },
+  { id: 'projects', pos: new THREE.Vector3(0.5, GY + 2.6, 2.0) },
+  { id: 'gallery',  pos: new THREE.Vector3(-4.6, 5.6, -9.2) },
+  { id: 'contact',  pos: new THREE.Vector3(6.8, 1.8, 11.2) }
+];
+const hotspots = [];
+const markerMeshes = [];
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x9fd8ec, transparent: true, opacity: 0.85 });
+const coreMat = new THREE.MeshStandardMaterial({ color: 0xeaf6ff, emissive: 0x9fd8ec, emissiveIntensity: 1.6 });
+
+hotspotDefs.forEach((def, i) => {
+  const g = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.045, 8, 28), ringMat.clone());
+  ring.userData.hotspot = def.id;
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), coreMat);
+  core.userData.hotspot = def.id;
+  const glow = glowSprite(0x9fd8ec, 1.7, 0.7);
+  g.add(ring, core, glow);
+  g.position.copy(def.pos);
+  scene.add(g);
+  markerMeshes.push(ring, core);
+
+  const meta = CONFIG.landmarks.find(l => l.id === def.id);
+  const label = document.createElement('div');
+  label.className = 'hotspot-label';
+  label.innerHTML = `<span class="badge">${meta.no}</span>${meta.name.split(' · ')[1]}`;
+  hotspotLayer.appendChild(label);
+
+  hotspots.push({ id: def.id, group: g, ring, label, baseY: def.pos.y, phase: i * 1.3 });
+});
+
+/* ════════════════════════════════════════════════════════════
+   ⑧ 状态机：首屏 Landing ⇄ 登岛 Explore（相机 Lerp 平滑过渡）
+   ════════════════════════════════════════════════════════════ */
+let state = 'landing';
+let transition = null;
+const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+function flyTo(pos, target, duration = 1450) {
+  return new Promise(resolve => {
+    transition = {
+      fromPos: camera.position.clone(), toPos: pos.clone(),
+      fromTg: controls.target.clone(), toTg: target.clone(),
+      start: performance.now(), duration, resolve
+    };
+    controls.enabled = false;
+  });
+}
+
+const landingPanel = document.getElementById('landing-panel');
+const bottomBar = document.getElementById('bottom-bar');
+const backBtn = document.getElementById('back-btn');
+const viewTools = document.getElementById('view-tools');
+
+async function enterExplore() {
+  if (state === 'exploring') return;
+  state = 'exploring';
+  document.body.classList.add('is-explore');
+  landingPanel.classList.add('is-hidden');
+  bottomBar.classList.add('is-hidden');
+  backBtn.classList.add('show');
+  viewTools.classList.add('show');
+  await flyTo(VIEW_EXPLORE.pos, VIEW_EXPLORE.tg);
+}
+async function exitExplore() {
+  if (state === 'landing') return;
+  closeModal();
+  state = 'landing';
+  document.body.classList.remove('is-explore');
+  backBtn.classList.remove('show');
+  viewTools.classList.remove('show');
+  hotspots.forEach(h => h.label.classList.remove('show'));
+  await flyTo(VIEW_LANDING.pos, VIEW_LANDING.tg);
+  landingPanel.classList.remove('is-hidden');
+  bottomBar.classList.remove('is-hidden');
+}
+async function openLandmark(id) {
+  if (state === 'landing') await enterExplore();
+  const v = FOCUS_VIEW[id];
+  await flyTo(v.pos, v.tg, 1300);
+  openModal(id);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑨ 指针交互：区分“拖拽旋转”与“点击”（位移 < 5px 才算点击）
+   ════════════════════════════════════════════════════════════ */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const tip = document.getElementById('island-tip');
+let downX = 0, downY = 0, isDown = false;
+
+function setPointer(e) {
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+}
+function pickHotspot() {
+  const hits = raycaster.intersectObjects(markerMeshes, false);
+  return hits.length ? hits[0].object.userData.hotspot : null;
+}
+function pickIsland() {
+  return raycaster.intersectObject(island, true).length > 0;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  isDown = true;
+  downX = e.clientX; downY = e.clientY;
+});
+canvas.addEventListener('pointermove', e => {
+  if (isDown) return;                 // 拖拽中不做悬停检测
+  setPointer(e);
+  const hp = pickHotspot();
+  if (hp) {
+    canvas.style.cursor = 'pointer';
+    tip.classList.remove('show');
+    return;
+  }
+  if (state === 'landing' && pickIsland()) {
+    canvas.style.cursor = 'pointer';
+    tip.style.left = e.clientX + 'px';
+    tip.style.top = e.clientY + 'px';
+    tip.classList.add('show');
+  } else {
+    canvas.style.cursor = 'grab';
+    tip.classList.remove('show');
+  }
+});
+canvas.addEventListener('pointerup', e => {
+  if (!isDown) return;
+  isDown = false;
+  const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+  if (moved >= 5) return;            // 判定为拖拽，不触发点击
+  setPointer(e);
+  const hp = pickHotspot();
+  if (hp) { openLandmark(hp); return; }
+  if (state === 'landing' && pickIsland()) enterExplore();
+});
+canvas.addEventListener('pointerleave', () => tip.classList.remove('show'));
+
+/* ════════════════════════════════════════════════════════════
+   ⑩ 毛玻璃弹窗：关于 / 作品 / 相册 / 联系
+   ════════════════════════════════════════════════════════════ */
+const modalOverlay = document.getElementById('modal-overlay');
+const modalContent = document.getElementById('modal-content');
+
+const MODAL_META = {
+  about:    { en: 'ABOUT ME',    zh: '关于我' },
+  projects: { en: 'PROJECTS',    zh: '作品集' },
+  gallery:  { en: 'GALLERY',     zh: '光影相册' },
+  contact:  { en: 'CONTACT ME',  zh: '联系我' }
+};
+
+function headHTML(id) {
+  const m = MODAL_META[id];
+  return `<div class="modal-head"><div class="en">${m.en}</div><h2>${m.zh}</h2><div class="rule"></div></div>`;
+}
+function openModal(id) {
+  let html = headHTML(id);
+  if (id === 'about') {
+    html += `<div class="about-bio">${CONFIG.about.bio.map(p => `<p>${p}</p>`).join('')}</div>
+      <div class="skill-tags">${CONFIG.about.skills.map(s => `<span>${s}</span>`).join('')}</div>
+      <div class="about-meta">${CONFIG.about.stats.map(s =>
+        `<div class="cell"><div class="num">${s.num}</div><div class="lbl">${s.label}</div></div>`).join('')}</div>`;
+  }
+  if (id === 'projects') {
+    html += `<div class="project-grid">${CONFIG.projects.map(p => `
+      <a class="project-card" href="${p.url}" target="_blank" rel="noopener noreferrer">
+        <div class="project-cover">
+          <img data-fb="项目封面" src="${p.cover}" alt="${p.title}" />
+          <span class="tag">${p.tag}</span>
+        </div>
+        <div class="project-body">
+          <h3>${p.title}</h3><p>${p.desc}</p>
+          <span class="go">查看详情 ↗</span>
+        </div>
+      </a>`).join('')}</div>
+      <div class="modal-footer">
+        <a class="pill-btn" href="${CONFIG.allProjectsUrl}" target="_blank" rel="noopener noreferrer">查看全部作品 ↗</a>
+      </div>`;
+  }
+  if (id === 'gallery') {
+    html += `<div class="gallery-grid">${CONFIG.gallery.map((g, i) => `
+      <figure class="gallery-item" data-idx="${i}">
+        <img data-fb="风景照片" src="${g.src}" alt="${g.place}" />
+        <figcaption class="cap">
+          <div class="place">${g.place}</div>
+          <div class="date">${g.date}</div>
+          <div class="words">${g.caption}</div>
+        </figcaption>
+      </figure>`).join('')}</div>`;
+  }
+  if (id === 'contact') {
+    html += `<div class="contact-list">
+      <div class="contact-row full">
+        <div class="ico">✉️</div>
+        <div><div class="k">EMAIL · 邮箱</div><div class="v">${CONFIG.contact.email}</div></div>
+        <button class="copy-btn" id="copy-email">复制</button>
+      </div>
+      ${CONFIG.contact.links.map(l => `
+        <a class="contact-row full" href="${l.url}" target="_blank" rel="noopener noreferrer">
+          <div class="ico">${l.icon}</div>
+          <div><div class="k">${l.label}</div><div class="v">${l.value}</div></div>
+          <div style="margin-left:auto;color:var(--ice)">↗</div>
+        </a>`).join('')}
+    </div>`;
+  }
+  modalContent.innerHTML = html;
+  modalOverlay.classList.add('show');
+  bindModalImages();
+  if (id === 'gallery') {
+    modalContent.querySelectorAll('.gallery-item').forEach(el =>
+      el.addEventListener('click', () => openLightbox(Number(el.dataset.idx))));
+  }
+  if (id === 'contact') {
+    document.getElementById('copy-email').addEventListener('click', copyEmail);
+  }
+}
+function closeModal() {
+  modalOverlay.classList.remove('show');
+}
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+document.getElementById('modal-close').addEventListener('click', closeModal);
+
+/* 图片加载失败时的本地冰霜渐变兜底（保证永远不出现裂图） */
+function bindModalImages() {
+  modalContent.querySelectorAll('img[data-fb]').forEach(img => {
+    img.addEventListener('error', function once() {
+      img.removeEventListener('error', once);
+      const label = img.dataset.fb || 'winter island';
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'>
+        <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0' stop-color='#1d4e77'/><stop offset='1' stop-color='#0a1a33'/>
+        </linearGradient></defs><rect width='800' height='600' fill='url(#g)'/>
+        <text x='400' y='310' fill='#9fd8ec' font-size='34' font-family='serif' text-anchor='middle'>❄ ${label}</text></svg>`;
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+  });
+}
+
+/* —— 邮箱一键复制 —— */
+const toast = document.getElementById('toast');
+let toastTimer;
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+async function copyEmail() {
+  try {
+    await navigator.clipboard.writeText(CONFIG.contact.email);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = CONFIG.contact.email;
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  showToast('邮箱已复制到剪贴板');
+}
+
+/* ════════════════════════════════════════════════════════════
+   ⑪ 全屏灯箱（左右按钮 / 键盘方向键 / ESC）
+   ════════════════════════════════════════════════════════════ */
+const lightbox = document.getElementById('lightbox');
+const lbImg = document.getElementById('lb-img');
+const lbPlace = document.getElementById('lb-place');
+const lbMeta = document.getElementById('lb-meta');
+const lbCounter = document.getElementById('lb-counter');
+let lbIndex = 0;
+
+function openLightbox(i) {
+  lbIndex = i;
+  renderLightbox();
+  lightbox.classList.add('show');
+}
+function renderLightbox() {
+  const item = CONFIG.gallery[lbIndex];
+  lbImg.src = item.src;
+  lbPlace.textContent = item.place;
+  lbMeta.textContent = `${item.date} · ${item.caption}`;
+  lbCounter.textContent = `${String(lbIndex + 1).padStart(2, '0')} / ${String(CONFIG.gallery.length).padStart(2, '0')}`;
+}
+function closeLightbox() { lightbox.classList.remove('show'); }
+function lbStep(d) {
+  lbIndex = (lbIndex + d + CONFIG.gallery.length) % CONFIG.gallery.length;
+  renderLightbox();
+}
+document.getElementById('lb-prev').addEventListener('click', () => lbStep(-1));
+document.getElementById('lb-next').addEventListener('click', () => lbStep(1));
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+
+/* 键盘：ESC 关闭 / ← → 切换 */
+document.addEventListener('keydown', e => {
+  if (lightbox.classList.contains('show')) {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lbStep(-1);
+    if (e.key === 'ArrowRight') lbStep(1);
+    return;
+  }
+  if (e.key === 'Escape' && modalOverlay.classList.contains('show')) closeModal();
+});
+
+/* ════════════════════════════════════════════════════════════
+   ⑫ UI 绑定：导航 / 按钮 / 开关
+   ════════════════════════════════════════════════════════════ */
+// 填充 CONFIG 文案
+document.getElementById('brand-logo').textContent = CONFIG.logoLetter;
+document.getElementById('brand-name').textContent = CONFIG.name;
+document.getElementById('ui-title-name').textContent = CONFIG.name;
+document.getElementById('ui-kicker').textContent = CONFIG.welcomeLine;
+document.querySelector('.brand-text .sub').textContent = CONFIG.subtitleEn;
+document.getElementById('ui-intro').innerHTML = CONFIG.intro.map(p => `<p>${p}</p>`).join('');
+document.getElementById('ui-identity').textContent = CONFIG.identityTag;
+document.getElementById('ui-slogan').textContent = CONFIG.sloganEn;
+document.title = `${CONFIG.name}的 ✦ 小岛`;
+
+// 底部地标胶囊
+const pill = document.getElementById('landmark-pill');
+CONFIG.landmarks.forEach(l => {
+  const b = document.createElement('button');
+  b.innerHTML = `<span class="no">${l.no}</span>${l.name}`;
+  b.addEventListener('click', () => openLandmark(l.id));
+  pill.appendChild(b);
+});
+// 顶部导航
+document.querySelectorAll('[data-landmark]').forEach(b =>
+  b.addEventListener('click', () => openLandmark(b.dataset.landmark)));
+// 主 CTA / 返回
+document.getElementById('cta-explore').addEventListener('click', enterExplore);
+document.getElementById('back-btn').addEventListener('click', exitExplore);
+
+// 右下功能开关
+const toolSnow = document.getElementById('tool-snow');
+const toolRotate = document.getElementById('tool-rotate');
+toolSnow.addEventListener('click', () => {
+  snowPoints.visible = !snowPoints.visible;
+  toolSnow.classList.toggle('off', !snowPoints.visible);
+});
+toolRotate.addEventListener('click', () => {
+  controls.autoRotate = !controls.autoRotate;
+  toolRotate.classList.toggle('off', !controls.autoRotate);
+});
+document.getElementById('tool-reset').addEventListener('click', () => {
+  closeModal();
+  flyTo(VIEW_EXPLORE.pos, VIEW_EXPLORE.tg);
+});
+
+/* ════════════════════════════════════════════════════════════
+   ⑬ GLTFLoader 模型替换接口（未来把程序化模型换成 .glb 时使用）
+   —— 在 CONFIG.MODEL_GLB_URL 填入你的 .glb 地址即可自动启用
+   ════════════════════════════════════════════════════════════ */
+function replaceWithGLB(url) {
+  const loader = new GLTFLoader();
+  loader.load(
+    url,
+    gltf => {
+      // 1) 移除当前程序化浮岛（热点 / 星空 / 飘雪保留，不受影响）
+      scene.remove(island);
+      // 2) 载入外部模型并自动居中、缩放到与原岛近似尺寸
+      const model = gltf.scene;
+      const box3 = new THREE.Box3().setFromObject(model);
+      const size = box3.getSize(new THREE.Vector3());
+      const scale = 20 / Math.max(size.x, size.z);   // 以 20 单位宽为基准
+      model.scale.setScalar(scale);
+      model.position.y = -box3.min.y * scale - 0.4;
+      model.traverse(o => {
+        if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
+      });
+      scene.add(model);
+      // 3) 若 .glb 内节点命名与热点 id 一致（about/projects/gallery/contact），
+      //    可在此把 hotspotDefs 的位置对齐到对应节点：
+      //    hotspotDefs.forEach(d => {
+      //      const node = model.getObjectByName(d.id);
+      //      if (node) node.getWorldPosition(d.pos);
+      //    });
+      console.log('[WinterIsland] GLB 模型替换成功:', url);
+    },
+    xhr => console.log('[WinterIsland] 模型加载中', (xhr.loaded / (xhr.total || 1) * 100).toFixed(0) + '%'),
+    err => console.error('[WinterIsland] GLB 加载失败，请检查路径：', err)
+  );
+}
+if (CONFIG.MODEL_GLB_URL) replaceWithGLB(CONFIG.MODEL_GLB_URL);
+
+/* ════════════════════════════════════════════════════════════
+   ⑭ 动画循环
+   ════════════════════════════════════════════════════════════ */
+const clock = new THREE.Clock();
+const tmpV = new THREE.Vector3();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  /* 相机过渡插值 */
+  if (transition) {
+    const k = Math.min(1, (performance.now() - transition.start) / transition.duration);
+    const e = easeInOutCubic(k);
+    camera.position.lerpVectors(transition.fromPos, transition.toPos, e);
+    controls.target.lerpVectors(transition.fromTg, transition.toTg, e);
+    if (k >= 1) {
+      const cb = transition.resolve;
+      transition = null;
+      controls.enabled = true;
+      cb();
+    }
+  }
+  controls.update();
+
+  /* 浮岛轻微上下浮动 */
+  island.position.y = Math.sin(t * 0.55) * 0.18;
+
+  /* 飘雪下落 + 横向漂移，落底回到顶部 */
+  if (snowPoints.visible) {
+    const arr = snowPoints.geometry.attributes.position.array;
+    for (let i = 0; i < SNOW_COUNT; i++) {
+      arr[i * 3 + 1] -= snowVel[i] * dt;
+      arr[i * 3] += Math.sin(t * 0.8 + i) * 0.18 * dt;
+      if (arr[i * 3 + 1] < -1.6) {
+        arr[i * 3 + 1] = 24;
+        arr[i * 3] = THREE.MathUtils.randFloatSpread(44);
+        arr[i * 3 + 2] = THREE.MathUtils.randFloatSpread(44);
+      }
+    }
+    snowPoints.geometry.attributes.position.needsUpdate = true;
+  }
+
+  /* 极光呼吸 + 缓慢横移 */
+  auroraMeshes.forEach((m, i) => {
+    m.material.opacity = 0.24 + Math.sin(t * 0.35 + i * 1.4) * 0.1;
+    m.position.x += Math.sin(t * 0.1 + i) * 0.004;
+  });
+
+  /* 热点脉冲 + HTML 标签屏幕投影 */
+  hotspots.forEach(h => {
+    const pulse = 1 + Math.sin(t * 2.2 + h.phase) * 0.16;
+    h.ring.scale.setScalar(pulse);
+    h.group.position.y = h.baseY + Math.sin(t * 1.2 + h.phase) * 0.22;
+    h.group.getWorldPosition(tmpV);
+    const show = state === 'exploring' && !modalOverlay.classList.contains('show');
+    h.label.classList.toggle('show', show);
+    if (show) {
+      const v = tmpV.clone().project(camera);
+      if (v.z > 1) { h.label.classList.remove('show'); return; }
+      h.label.style.left = ((v.x * 0.5 + 0.5) * window.innerWidth) + 'px';
+      h.label.style.top = ((-v.y * 0.5 + 0.5) * window.innerHeight) + 'px';
+    }
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ════════════════════════════════════════════════════════════
+   ⑮ 响应式
+   ════════════════════════════════════════════════════════════ */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
